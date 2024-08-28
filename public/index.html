@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lamp Control</title>
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <h1>Lamp Control</h1>
+    <button id="randomLampBtn">Light Random Lamp</button>
+    <button id="allLampsBtn">Light All Lamps</button>
+    
+    <div>
+        <label for="lampCount">Enter Total Lamp Number:</label>
+        <input type="number" id="lampCount" min="1" />
+        <button id="continuousLampsBtn">Light Continuous Lamps</button>
+    </div>
+
+    <script>
+        const socket = io();
+
+        document.getElementById('randomLampBtn').addEventListener('click', () => {
+            const randomLampName = `Lamp-${Math.floor(Math.random() * 10) + 1}`;
+            socket.emit('light-random-lamp', randomLampName);
+        });
+
+        document.getElementById('allLampsBtn').addEventListener('click', () => {
+            const blowAllLamp = true;
+            socket.emit('light-all-lamps', blowAllLamp);
+        });
+
+        document.getElementById('continuousLampsBtn').addEventListener('click', () => {
+            const lampCount = parseInt(document.getElementById('lampCount').value);
+            if (isNaN(lampCount) || lampCount <= 0) {
+                alert("Please enter a valid number of lamps.");
+                return;
+            }
+
+            let litLamps = 0;
+            const interval = setInterval(() => {
+                if (litLamps < lampCount) {
+                    const randomLampName = `Lamp-${Math.floor(Math.random() * lampCount) + 1}`;
+                    socket.emit('light-continuous-lamps', '');
+                    litLamps++;
+                } else {
+                    clearInterval(interval);
+                }
+            }, 10);
+        });
+
+        socket.on('light-random-lamp', (lampName) => {
+            console.log(`Random Lamp Lit: ${lampName}`);
+        });
+
+        socket.on('light-all-lamps', (blowAllLamp) => {
+            console.log(`All Lamps Lit: ${blowAllLamp}`);
+        });
+
+        socket.on('light-continuous-lamps', (lampName) => {
+            console.log(`Continuous Lamp Lit: ${lampName}`);
+        });
+    </script>
+</body>
+</html>
